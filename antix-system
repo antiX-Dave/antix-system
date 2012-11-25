@@ -1,0 +1,109 @@
+#!/usr/bin/env python
+
+import gtk
+import os
+import subprocess
+import re
+
+class Variables():
+    def __init__(self):
+        for line in open("/etc/hostname", "r").xreadlines():
+            line = re.sub("\n","", line)
+            Variables.current_computer_name=line
+
+class Host:        
+
+    def __init__(self):
+        self.frame = gtk.Frame()
+        self.frame.set_size_request(400,400)
+        self.frame.set_shadow_type(gtk.SHADOW_NONE)
+        self.frame.set_border_width(10)
+        self.frame.show()
+        
+        box = gtk.VBox()
+        self.frame.add(box)
+        box.show()
+        
+        label = gtk.Label()
+        label.set_text("Computer Name")
+        box.pack_start(label)
+        label.show()
+        
+        Computer_Name = gtk.Entry()
+        Computer_Name.set_text(Variables.current_computer_name)
+        box.pack_start(Computer_Name)
+        Computer_Name.show()
+
+class mainWindow():
+    def build_tab_box(self,image,text):
+       #Taken from lagopus's antixcc.py script from START marker line to END marker line,
+       #slightly modified to meet needs of this script
+       # START #######################################
+        self.tab_box = gtk.HBox(False, 2)
+        self.tab_box.set_spacing(8)
+        tab_label = gtk.Label(text)
+
+        pixbuf = gtk.gdk.pixbuf_new_from_file(image)
+        tab_icon = gtk.Image()
+        tab_icon.set_from_pixbuf(pixbuf)
+                
+        tab_icon.set_size_request(-1, 60)
+        self.tab_box.pack_start(tab_icon, False)
+        self.tab_box.pack_start(tab_label, False)
+
+        # needed, otherwise even calling show_all on the notebook won't
+        # make the hbox contents appear.
+        self.tab_box.show_all()
+        # END #######################################
+    
+    def destroy(self, widget, data=None):
+        gtk.main_quit()
+		
+    def __init__(self):
+        self.window = gtk.Window()
+        self.window.set_size_request(400,300)
+        self.window.set_title("AntiX System")
+        self.window.connect("destroy", self.destroy)
+        
+        table = gtk.Table(2,3,True)
+        table.show()
+        
+        scrolled_window = gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
+        scrolled_window.add_with_viewport(table)
+        self.window.add(scrolled_window)
+        scrolled_window.show()
+        
+        # Create a new notebook, place the position of the tabs
+        self.notebook = gtk.Notebook()
+        self.notebook.set_tab_pos(gtk.POS_LEFT)
+        table.attach(self.notebook, 0,3,0,1, xoptions=gtk.FILL, yoptions=gtk.FILL)
+        self.notebook.show()
+        
+        #Start Host Class
+        self.build_tab_box("/usr/share/icons/Crystal/48x48/apps/tux.png","Host ")
+        self.notebook.append_page(Host().frame, self.tab_box)
+        
+        #Start Locale Class
+        self.build_tab_box("/usr/share/icons/gTangish-2.0a1/48x48/apps/locale.png","Locale")
+        self.notebook.append_page(Host().frame, self.tab_box)
+        
+        #Start Keyboard and Mouse Class
+        self.build_tab_box("/usr/share/icons/gTangish-2.0a1/48x48/devices/keyboard.png","Keyboard\n&\nMouse")
+        self.notebook.append_page(Host().frame, self.tab_box)
+        
+        #Start Disk Class
+        self.build_tab_box("/usr/share/icons/gTangish-2.0a1/48x48/devices/harddrive.png","Disk")
+        self.notebook.append_page(Host().frame, self.tab_box)
+		
+        #Start Grub Class
+        self.build_tab_box("/usr/share/icons/gTangish-2.0a1/48x48/apps/system-installer.png","Grub")
+        self.notebook.append_page(Host().frame, self.tab_box)
+        
+        #Start Prefered Applications Class
+        self.build_tab_box("/usr/share/icons/gTangish-2.0a1/48x48/categories/preferences-system.png","Preferred\nApplications")
+        self.notebook.append_page(Host().frame, self.tab_box)
+        self.window.show()
+
+Variables()
+mainWindow()
+gtk.main()
